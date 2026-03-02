@@ -10,4 +10,9 @@
 		<!-- QRCoder: lightweight QR code generation, no native dependencies -->
 		<PackageReference Include="QRCoder" Version="1.6.0" />
 	</ItemGroup>
+	<ItemGroup>
+	  <None Update="Wifi.json">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
 </Project>

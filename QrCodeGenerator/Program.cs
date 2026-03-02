@@ -1,33 +1,37 @@
 ﻿using QRCoder;
+using System.Text.Json;
 
 namespace WifiQrGenerator;
 
 class Program
 {
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         Console.Clear();
-        PrintBanner();
+        //PrintBanner();
 
-        var config = GetWifiConfig();
-        string wifiString = BuildWifiString(config);
-
-        Console.WriteLine("\n⏳ Generating QR Code...\n");
-
+        //var config = GetWifiConfig();
+        var wifis = await LoadWifiConfigsAsync("Wifi.json");
+        string wifiString;
+        foreach (var config in wifis)
+        {
+            wifiString = BuildWifiString(config);
+            SaveQrAsPng(wifiString, config);
+        }
         // Save as PNG
-        string pngPath = SaveQrAsPng(wifiString, config.Ssid);
+        //string pngPath = SaveQrAsPng(wifiString, config.Ssid);
 
-        // Also render in terminal
-        PrintQrToConsole(wifiString);
+        //// Also render in terminal
+        //PrintQrToConsole(wifiString);
 
-        Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"\n✅ QR Code saved to: {Path.GetFullPath(pngPath)}");
-        Console.ResetColor();
+        //Console.ForegroundColor = ConsoleColor.Green;
+        //Console.WriteLine($"\n✅ QR Code saved to: {Path.GetFullPath(pngPath)}");
+        //Console.ResetColor();
 
-        Console.WriteLine("\n📋 WiFi String (for manual testing):");
-        Console.ForegroundColor = ConsoleColor.DarkGray;
-        Console.WriteLine($"   {wifiString}");
-        Console.ResetColor();
+        //Console.WriteLine("\n📋 WiFi String (for manual testing):");
+        //Console.ForegroundColor = ConsoleColor.DarkGray;
+        //Console.WriteLine($"   {wifiString}");
+        //Console.ResetColor();
 
         Console.WriteLine("\nPress any key to exit...");
         Console.ReadKey();
@@ -140,7 +144,7 @@ class Program
             .Replace(":", "\\:");
     }
 
-    static string SaveQrAsPng(string wifiString, string ssid)
+    static void SaveQrAsPng(string wifiString, WifiConfig config)
     {
         using var qrGenerator = new QRCodeGenerator();
         QRCodeData qrCodeData = qrGenerator.CreateQrCode(wifiString, QRCodeGenerator.ECCLevel.Q);
@@ -148,12 +152,7 @@ class Program
         using var qrCode = new PngByteQRCode(qrCodeData);
         byte[] qrCodeBytes = qrCode.GetGraphic(10);
 
-        // Sanitize filename
-        string safeFilename = string.Concat(ssid.Split(Path.GetInvalidFileNameChars()));
-        string filename = $"wifi_qr_{safeFilename}_{DateTime.Now:yyyyMMdd_HHmmss}.png";
-
-        File.WriteAllBytes(filename, qrCodeBytes);
-        return filename;
+        File.WriteAllBytes($@"c:/Temp/{config.FileName}.png", qrCodeBytes);
     }
 
     static void PrintQrToConsole(string wifiString)
@@ -169,6 +168,31 @@ class Program
             Console.WriteLine("  " + line);
         Console.ResetColor();
     }
+
+    static async Task<List<WifiConfig>> LoadWifiConfigsAsync(string fileName = "wifi.json")
+    {
+        // Project root path
+        string root = AppContext.BaseDirectory;
+
+        // If running from /bin/Debug/... go up to project root
+        string projectRoot = Directory.GetParent(root)!.Parent!.Parent!.Parent!.FullName;
+
+        string jsonFilePath = Path.Combine(projectRoot, fileName);
+        //C:\Users\offic\source\repos\alizadeh-mohsen\QrCodeGenerator\QrCodeGenerator\bin\Debug\net8.0
+        if (!File.Exists(jsonFilePath))
+            return new List<WifiConfig>();
+
+        string json = await File.ReadAllTextAsync(jsonFilePath);
+
+        var items = JsonSerializer.Deserialize<List<WifiConfig>>(json, new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true
+        });
+
+        return items ?? new List<WifiConfig>();
+    }
+
+
 }
 
 record WifiConfig
@@ -176,5 +200,6 @@ record WifiConfig
     public string Ssid { get; set; } = "";
     public string Password { get; set; } = "";
     public string SecurityType { get; set; } = "WPA";
+    public string FileName { get; set; } = "";
     public bool Hidden { get; set; } = false;
 }
