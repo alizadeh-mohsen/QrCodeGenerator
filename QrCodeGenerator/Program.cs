@@ -3,14 +3,20 @@ using System.Text.Json;
 
 namespace WifiQrGenerator;
 
+
+
 class Program
 {
+    const string Folder = @"c:/Temp";
+
     static async Task Main(string[] args)
     {
         Console.Clear();
+        Console.WriteLine("Press any key to start...");
+        Console.ReadKey();
         //PrintBanner();
 
-        //var config = GetWifiConfig();
+        ClearTempFolder();
         var wifis = await LoadWifiConfigsAsync("Wifi.json");
         string wifiString;
         foreach (var config in wifis)
@@ -33,7 +39,7 @@ class Program
         //Console.WriteLine($"   {wifiString}");
         //Console.ResetColor();
 
-        Console.WriteLine("\nPress any key to exit...");
+        Console.WriteLine("\n QR Codes generated in c:/Temp/ Press any key to exit...");
         Console.ReadKey();
     }
 
@@ -152,7 +158,7 @@ class Program
         using var qrCode = new PngByteQRCode(qrCodeData);
         byte[] qrCodeBytes = qrCode.GetGraphic(10);
 
-        File.WriteAllBytes($@"c:/Temp/{config.FileName}.png", qrCodeBytes);
+        File.WriteAllBytes($@"{Folder}/{config.FileName}.png", qrCodeBytes);
     }
 
     static void PrintQrToConsole(string wifiString)
@@ -192,7 +198,26 @@ class Program
         return items ?? new List<WifiConfig>();
     }
 
-
+    static void ClearTempFolder(string folderPath = Folder)
+    {
+        try
+        {
+            if (Directory.Exists(folderPath))
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(folderPath);
+                foreach (FileInfo file in directoryInfo.GetFiles())
+                {
+                    file.Delete();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine($"❌ Error clearing temp folder: {ex.Message}");
+            Console.ResetColor();
+        }
+    }
 }
 
 record WifiConfig
