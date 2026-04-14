@@ -6,13 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Wifi.json" />
+  </ItemGroup>
 	<ItemGroup>
 		<!-- QRCoder: lightweight QR code generation, no native dependencies -->
 		<PackageReference Include="QRCoder" Version="1.6.0" />
 	</ItemGroup>
 	<ItemGroup>
-	  <None Update="Wifi.json">
+	  <Resource Include="Wifi.json">
 	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
+	  </Resource>
 	</ItemGroup>
 </Project>
