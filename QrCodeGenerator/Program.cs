@@ -311,6 +311,16 @@ record WifiConfig
     "fileName": "Central London 2 Bedroom Penthouse",
     "ssid": "GP_E5_EA186",
     "password": "eBX5S>VM"
+  },
+  {
+    "fileName": "384 Harrow road",
+    "ssid": "BTB-G9FMK5",
+    "password": "nL4tbx96DtRHaX"
+  },
+  {
+    "fileName": "382 Harrow Road",
+    "ssid": "BTB-97TXHQ",
+    "password": "vnFPLbXK9FrnmyMy"
   }
 ]
  */
